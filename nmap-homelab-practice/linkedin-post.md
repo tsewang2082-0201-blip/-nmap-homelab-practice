@@ -10,6 +10,6 @@ The main thing I took away from this: a single outdated version banner was enoug
 
 All of this was done on a VM I own, on a network isolated from the internet, purely for learning.
 
-Full write-up with commands and findings is on GitHub: [link]
+Full write-up with commands and findings is on GitHub: https://github.com/tsewang2082-0201-blip/-nmap-homelab-practice/tree/main
 
 #cybersecurity #nmap #metasploit #infosec #homelab
