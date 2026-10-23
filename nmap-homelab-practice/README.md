@@ -1,53 +1,36 @@
 # Nmap Home Lab Practice
 
-Personal lab notes and scan reports from practicing network reconnaissance with **Nmap** against a deliberately vulnerable target (**Metasploitable 2**) inside an isolated **VirtualBox** home lab running **Kali Linux** as the attacker box.
+Personal practice log from setting up a home lab and working through the recon-to-exploitation process on Metasploitable 2.
 
-This repo is a learning log, not a production toolkit. Everything here was run against machines I own, on an internal (host-only / NAT-only) virtual network with no route to the internet or any third-party system.
+## Setup
 
-## Lab setup
+- Kali Linux and Metasploitable 2 running in VirtualBox, on the same internal network with static IPs
+- Kali had a second adapter on NAT, used only for updates, kept separate from the lab network
+- Took around 2-3 hours, mostly getting the networking set up correctly
 
-| Component   | Role                                   |
-|-------------|-----------------------------------------|
-| Kali Linux  | Attacker machine — nmap, enumeration tools |
-| Metasploitable 2 | Intentionally vulnerable target VM |
-| VirtualBox  | Hypervisor, host-only network between the two VMs |
+## What's in here
 
-## Scope and ethics
+- `reports/` - write-ups from each practice session: what I ran, what I found, what I learned
+- `linkedin-post.md` - draft of a post about this project
 
-- All targets are VMs I own and run locally.
-- The lab network is isolated (host-only adapter) — no scans ever leave the virtual network.
-- Techniques practiced here are for learning defensive/offensive security concepts and are **not** to be used against systems without explicit authorization.
+## Progress
 
-## Repo structure
+- Set up the home lab(virtual box,kali,metasploitable 2, metasploit)
+- Ran a full port scan on the target - found 27 open ports(Used n-map with -sn flag)
+- Ran version detection on all open ports (-sN and -sV)
+- Used searchsploit to match services against known exploits(searchsploit)
+- Confirmed the vsftpd 2.3.4 backdoor and got a root shell with Metasploit
+- Reviewed the traffic in Wireshark to see what each step actually looked like on the wire
+- use Metasploit framework to exploit the vulnurability
 
-```
-nmap-homelab-practice/
-├── README.md
-├── reports/
-│   └── 2026-10-22-vsftpd-backdoor/
-│       ├── scan-report.md      # write-up: command, findings, lessons learned
-│       └── raw-output.txt      # raw nmap output for that session
-└── scripts/
-    └── (helper scripts, e.g. scan automation, parsing)
-```
+## What I Learned
 
-Each session gets its own `reports/<date-or-topic>/` folder with:
-1. **scan-report.md** — what I ran, why, what I found, what it means, what I'd try next
-2. **raw-output.txt** — the actual terminal output, for reference
+- Scan broad first (`-sS -p-`), then go deep with `-sV -sC` only on what's open.
+- A single outdated version banner was enough to flag the biggest risk on the host, before exploiting anything.
+- `searchsploit --nmap <scan>.xml` matches open services to known exploits automatically — much faster than researching each one manually.
+- Checked the actual traffic in Wireshark to confirm what Metasploit reported, instead of just trusting the tool.
+- Next step: only went deep on one service — should repeat this on another, and add remediation notes, not just "how I broke it."
 
-## Progress log
+## Note on scope
 
-- [x] TryHackMe Nmap room (host discovery) — completed
-- [x] Home lab set up: Kali + Metasploitable 2 in VirtualBox
-- [x] Full TCP port scan (`-sS -p- --min-rate 1000`) — 27 open ports found
-- [x] Service/version detection (`-sV -sC`) on all open ports
-- [x] Correlated findings to known exploits with `searchsploit --nmap`
-- [x] Confirmed the vsftpd 2.3.4 backdoor (CVE-2011-2523) with Metasploit — root session obtained
-- [x] Reviewed scan + exploit traffic in Wireshark
-- [ ] Vulnerability scripts (`--script vuln`) as a second pass
-- [ ] Remediation write-up per finding
-- [ ] Cross-post write-up to LinkedIn
-
-## Why this repo exists
-
-Documenting hands-on practice to reinforce learning (active recall), build a portfolio of real lab work for internship/job applications, and share progress with the cybersecurity community on LinkedIn and GitHub.
+Everything here was done against VMs I own, on a network isolated from my host machine and the internet.
