@@ -5,17 +5,17 @@
 **Attacker machine:** Kali Linux — 10.10.10.10 (second adapter on NAT, for updates only)
 **Tools:** Wireshark, Nmap 7.99, Searchsploit, Metasploit Framework 6.4
 
-## 1. Objective
+## objective
 
 Practice the full recon-to-exploitation workflow against a known-vulnerable target in an isolated lab: discover the host, enumerate services, identify a known vulnerability, and confirm it with a real exploit — while also inspecting the underlying traffic in Wireshark to understand what each step looks like on the wire.
 
-## 2. Lab setup
+## Lab setup
 
 - Kali and Metasploitable 2 placed on the same **internal** VirtualBox network with static IPs (10.10.10.10 / 10.10.10.20), isolated from the host and internet.
 - A second adapter on Kali (NAT) used only for package updates — kept separate from the lab network.
 - Setup took roughly 2–3 hours, mostly networking configuration.
 
-## 3. Methodology
+##  Methodology
 
 **a) Traffic baseline (Wireshark).**
 Captured on `eth1` to see what discovery and scanning traffic actually looks like: an ARP request/reply resolving 10.10.10.20, then individual TCP handshakes for specific ports (e.g., port 20 closed → immediate RST/ACK; port 21 open → SYN/ACK then RST once the probe finished). This made the difference between an open, closed, and filtered port concrete at the packet level rather than just reading nmap's output.
@@ -49,7 +49,7 @@ From the resulting session: `getuid` and `sysinfo` confirmed a session running a
 **g) Traffic review of the exploit.**
 Went back to Wireshark to watch the FTP control channel during the exploit attempt — the `USER`/password exchange, a `500 OOPS:` server response, and the subsequent backdoor shell traffic on the attacker-controlled port — tying the Metasploit-reported result back to what was visible on the wire.
 
-## 4. Findings summary
+##  Findings summary
 
 | Port | Service | Version | Notable issue |
 |------|---------|---------|----------------|
@@ -62,19 +62,13 @@ Went back to Wireshark to watch the FTP control channel during the exploit attem
 
 Root-level code execution was achieved via the vsftpd backdoor, confirming the service is exploitable as flagged.
 
-## 5. Lessons learned
+##  Lessons learned
 
 - Seeing the TCP handshake at the packet level (SYN → SYN/ACK → RST for closed; full exchange for open) made nmap's state output much more intuitive than just trusting the tool.
 - `searchsploit --nmap <file>.xml` is a fast way to triage a large open-port list into "which of these are actually known-exploitable" instead of researching each service by hand.
 - Anonymous FTP + an old, backdoored version was the single highest-value finding on this host — a reminder that version/banner info alone can be enough to flag critical risk, before any exploitation is attempted.
 - Keeping the lab fully isolated (internal network only, NAT adapter reserved for updates) made it easy to scan aggressively without any risk of touching real infrastructure.
 
-## 6. Next steps
-
-- [ ] Repeat the same workflow against another default Metasploitable service (e.g., distccd or the r-services) end to end.
-- [ ] Write a short remediation note for each finding (e.g., patch vsftpd, disable anonymous FTP, disable legacy SSLv2 ciphers).
-- [ ] Try the same recon phase with `nmap --script vuln` instead of manual searchsploit correlation and compare results.
-- [ ] Clean this report up and cross-post a summary to LinkedIn/GitHub.
 
 ---
 *Practiced entirely in an isolated home lab against a VM I own. No scans or exploitation were run against third-party infrastructure.*
