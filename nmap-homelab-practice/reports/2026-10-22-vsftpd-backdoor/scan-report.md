@@ -3,7 +3,7 @@
 **Date:** 2026-10-22
 **Target:** Metasploitable 2 — 10.10.10.20 (internal/host-only network)
 **Attacker machine:** Kali Linux — 10.10.10.10 (second adapter on NAT, for updates only)
-**Tools:** Wireshark, Nmap 7.99, Searchsploit, Metasploit Framework 6.4
+**Tools:** Wireshark, Nmap , Searchsploit, Metasploit Framework 
 
 ## objective
 
